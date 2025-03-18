@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class PolygonModels extends Model
 {
-    protected $table ='Polygon';
+    protected $table ='polygon';
     protected $guarded =['id'];
 }
