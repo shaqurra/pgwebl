@@ -11,29 +11,35 @@ class PolygonModels extends Model
 
     protected $guarded = ['id'];
 
-    public function geojson_polygon(){
+    public function geojson_polygon()
+    {
 
         $polygon = $this
-        ->select(DB::raw('ST_AsGeoJson(geom) AS geom, ST_Area(geom, true) AS area_m2, ST_Area(geom, true)/1000000 AS area_km2, ST_Area(geom, true)/10000 AS area_hectare,       name, description, created_at, updated_at '))
-        ->get();
+            ->select(DB::raw('ST_AsGeoJson(geom) AS geom,
+                ST_Area(geom, true) AS area_m2,
+                    ST_Area(geom, true)/1000000 AS area_km2,
+                    ST_Area(geom, true)/10000 AS area_hectare,
+                    name, description, image, created_at, updated_at')) // Tambahkan kolom `image`
+            ->get();
 
         $geojson = [
             'type'      => 'FeatureCollection',
             'features'  => []
         ];
 
-        foreach ($polygon as $polygon) {
+        foreach ($polygon as $p) {
             $feature = [
                 'type' => 'Feature',
-                'geometry' => json_decode($polygon->geom),
+                'geometry' => json_decode($p->geom),
                 'properties' => [
-                    'name' => $polygon->name,
-                    'description' => $polygon->description,
-                    'area_m2' => $polygon->area_m2,
-                    'area_km2' => $polygon->area_km2,
-                    'area_hectare' => $polygon->area_hectare,
-                    'created_at' => $polygon->created_at,
-                    'updated_at' => $polygon->updated_at
+                    'name' => $p->name,
+                    'description' => $p->description,
+                    'image' => $p->image,
+                    'area_m2' => $p->area_m2,
+                    'area_km2' => $p->area_km2,
+                    'area_hectare' => $p->area_hectare,
+                    'created_at' => $p->created_at,
+                    'updated_at' => $p->updated_at
                 ]
             ];
 
@@ -41,6 +47,5 @@ class PolygonModels extends Model
         }
 
         return $geojson;
-
     }
 }

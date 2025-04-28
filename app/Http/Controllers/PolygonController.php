@@ -38,7 +38,8 @@ class PolygonController extends Controller
             [
                 'name' => 'required|unique:polygon,name',
                 'description' => 'required',
-                'geom_polygon' => 'required'
+                'geom_polygon' => 'required',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ],
             [
                 'name.required' => 'Name is required',
@@ -47,20 +48,35 @@ class PolygonController extends Controller
                 'geom_polygon.required' => 'Geometry Polygon is required'
             ]
         );
+
+        //Create image directory if not exists
+        if (!is_dir('storage/images')) {
+            mkdir('./storage/images', 0777);
+        }
+
+        //Get Image File
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_polygon." . strtolower($image->getClientOriginalExtension());
+            $image->move('storage/images', $name_image);
+        } else {
+            $name_image = null;
+        }
+
         $data = [
             'geom' => $request->geom_polygon,
             'name' => $request->name,
-            'description' => $request->description
+            'description' => $request->description,
+            'image' => $name_image,
         ];
 
         // Create Data
-        if (!$this->polygon->create($data)){
+        if (!$this->polygon->create($data)) {
             return redirect()->route('map')->with('error', 'Polygon failed to add');
         }
 
         // Redirect to Map
         return redirect()->route('map')->with('success', 'Polygon has been added successfully');
-
     }
 
     /**

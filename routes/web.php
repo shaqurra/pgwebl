@@ -12,6 +12,6 @@ Route::get('/table', [TableController::class, 'index'])->name('table');
 
 Route::resource('points', PointsController::class);
 
-Route::resource('polylines', PolylineController::class);
+Route::resource('polyline', PolylineController::class);
 
 Route::resource('polygon', PolygonController::class);

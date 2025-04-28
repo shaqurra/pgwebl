@@ -9,7 +9,7 @@ class PolylineController extends Controller
 {
     public function __construct()
     {
-        $this -> polyline = new PolylineModels();
+        $this->polyline = new PolylineModels();
     }
 
 
@@ -35,22 +35,38 @@ class PolylineController extends Controller
         $request->validate(
             [
                 'name' => 'required|unique:polyline,name',
-                'description'=> 'required',
+                'description' => 'required',
                 'geom_polyline' => 'required',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ],
             [
                 'name.required' => 'Name is required',
                 'name.unique' => 'Name already exists',
-                'description.required'=> 'Description is required',
+                'description.required' => 'Description is required',
                 'geom_polyline.required' => 'Geometry polyline is required',
 
             ]
         );
 
+        //Create image directory if not exists
+        if (!is_dir('storage/images')) {
+            mkdir('./storage/images', 0777);
+        }
+
+        //Get Iamge File
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_polyline." . strtolower($image->getClientOriginalExtension());
+            $image->move('storage/images', $name_image);
+        } else {
+            $name_image = null;
+        }
+
         $data = [
             'geom' => $request->geom_polyline,
             'name' => $request->name,
             'description' => $request->description,
+            'image' => $name_image,
         ];
 
         // create data
@@ -60,7 +76,6 @@ class PolylineController extends Controller
 
         // redirect to map
         return redirect()->route('map')->with('success', 'Polyline has been added');
-
     }
 
     /**
