@@ -268,99 +268,166 @@
             drawnItems.addLayer(layer);
         });
 
-        // GeoJSON Points
         var point = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
+                var routedelete = "{{ route('points.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
+
                 var popupContent = purpleTableStyle + `
-                <table class="purple-table">
-                    <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
-                    <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
-                    <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
-                    <tr><th>Foto</th>
-                        <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
-                    </tr>
-                </table>
-                `;
+            <table class="purple-table">
+                <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
+                <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
+                <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
+                <tr>
+                    <th>Foto</th>
+                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" width="200px" height="200px" alt=""></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <form method="POST" action="${routedelete}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        `;
+
                 layer.on({
                     click: function(e) {
-                        point.bindPopup(popupContent);
+                        layer.bindPopup(popupContent).openPopup();
                     },
                     mouseover: function(e) {
-                        point.bindTooltip(feature.properties.name);
+                        layer.bindTooltip(feature.properties.name);
                     },
                 });
             },
         });
+
         $.getJSON("{{ route('api.points') }}", function(data) {
             point.addData(data);
             map.addLayer(point);
         });
 
-        // GeoJSON Polyline
+
+
         var polyline = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
+                var routedelete = "{{ route('polyline.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
+
                 var popupContent = purpleTableStyle + `
-                <table class="purple-table">
-                    <tr>
-                        <th>Nama</th>
-                        <td>${feature.properties.name}</td>
-                    </tr>
-                    <tr>
-                        <th>Deskripsi</th>
-                        <td>${feature.properties.description}</td>
-                    </tr>
-                    <tr>
-                        <th>Dibuat</th>
-                        <td>${feature.properties.created_at}</td>
-                    </tr>
-                    <tr>
-                        <th>Foto</th>
-                        <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
-                    </tr>
-                </table>
-                `;
+            <table class="purple-table">
+                <tr>
+                    <th>Nama</th>
+                    <td>${feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <th>Deskripsi</th>
+                    <td>${feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <th>Dibuat</th>
+                    <td>${feature.properties.created_at}</td>
+                </tr>
+                <tr>
+                    <th>Foto</th>
+                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <form method="POST" action="${routedelete}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        `;
+
                 layer.on({
                     click: function(e) {
-                        polyline.bindPopup(popupContent);
+                        layer.bindPopup(popupContent).openPopup();
                     },
                     mouseover: function(e) {
-                        polyline.bindTooltip(feature.properties.name);
+                        layer.bindTooltip(feature.properties.name);
                     },
                 });
             },
         });
+
         $.getJSON("{{ route('api.polyline') }}", function(data) {
             polyline.addData(data);
             map.addLayer(polyline);
         });
 
-        // GeoJSON Polygon
+
         var polygon = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
+                var routedelete = "{{ route('polygon.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
+
                 var popupContent = purpleTableStyle + `
-                <table class="purple-table">
-                    <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
-                    <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
-                    <tr><th>Luas</th><td>${feature.properties.area_hectare} ha</td></tr>
-                    <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
-                    <tr><th>Foto</th>
-                        <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
-                    </tr>
-                </table>
-                `;
+            <table class="purple-table">
+                <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
+                <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
+                <tr><th>Luas</th><td>${feature.properties.area_hectare} ha</td></tr>
+                <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
+                <tr><th>Foto</th>
+                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <form method="POST" action="${routedelete}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        `;
+
                 layer.on({
                     click: function(e) {
-                        polygon.bindPopup(popupContent);
+                        layer.bindPopup(popupContent).openPopup();
                     },
                     mouseover: function(e) {
-                        polygon.bindTooltip(feature.properties.name);
+                        layer.bindTooltip(feature.properties.name);
                     },
                 });
             },
         });
+
         $.getJSON("{{ route('api.polygon') }}", function(data) {
             polygon.addData(data);
             map.addLayer(polygon);
         });
+
+        // Layer Groups
+        var baseLayers = {
+            "OpenStreetMap": L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            })
+        };
+
+        var overlays = {
+            "Points": point,
+            "Polylines": polyline,
+            "Polygons": polygon
+        };
+
+        // Tambahkan Layer Control ke Peta
+        L.control.layers(baseLayers, overlays, {
+            collapsed: false
+        }).addTo(map);
     </script>
 @endsection
