@@ -14,7 +14,6 @@
     </style>
 @endsection
 
-
 @section('content')
     <div id="map"></div>
 
@@ -155,7 +154,6 @@
     </div>
 @endsection
 
-
 @section('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -167,30 +165,6 @@
     <script src="https://unpkg.com/@terraformer/wkt"></script>
 
     <script>
-        // Purple table styles
-        var purpleTableStyle = `
-        <style>
-          .purple-table {
-            border-collapse: collapse;
-            width: 100%;
-          }
-          .purple-table th {
-            background-color: #6a0dad;
-            color: white;
-            border: 1px solid #4b0082;
-            padding: 6px;
-          }
-          .purple-table td {
-            border: 1px solid #9370db;
-            padding: 6px;
-            background-color: #f5f0ff;
-          }
-          .purple-table tr:hover td {
-            background-color: #e6d9ff;
-          }
-        </style>
-        `;
-
         var map = L.map('map').setView([-7.6587330, 110.3772891], 13);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -225,40 +199,27 @@
             var drawnJSONObject = layer.toGeoJSON();
             var objectGeometry = Terraformer.geojsonToWKT(drawnJSONObject.geometry);
 
-            // data yang dihasilkan strukturnya berupa GeoJSOn
             console.log(drawnJSONObject);
-            // console.log(objectGeometry);
-
-            // berupa permisalan : jika,
 
             if (type === 'polyline') {
                 console.log("Create " + type);
 
                 $('#geom_polyline').val(objectGeometry)
 
-                //Memunculkan modal untuk create polyline
                 $('#createpolylineModal').modal('show');
-
 
             } else if (type === 'polygon' || type === 'rectangle') {
                 console.log("Create " + type);
 
-
                 $('#geom_polygon').val(objectGeometry)
-                //Memunculkan modal untuk create polygon
+
                 $('#createpolygonModal').modal('show');
-
-
-
-                //memunculkan modal create point
-
 
             } else if (type === 'marker') {
                 console.log("Create " + type);
 
                 $('#geom_point').val(objectGeometry)
 
-                //Memunculkan modal untuk create marker
                 $('#createpointModal').modal('show');
 
             } else {
@@ -268,33 +229,46 @@
             drawnItems.addLayer(layer);
         });
 
+        // Point Layer
         var point = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
                 var routedelete = "{{ route('points.destroy', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
 
-                var popupContent = purpleTableStyle + `
-            <table class="purple-table">
-                <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
-                <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
-                <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
-                <tr>
-                    <th>Foto</th>
-                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" width="200px" height="200px" alt=""></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <form method="POST" action="${routedelete}">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
-                                <i class="fa-solid fa-trash-can"></i> Hapus
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            </table>
-        `;
+                var routeedit = "{{ route('points.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
+
+                var popupContent = `
+                    <table>
+                        <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
+                        <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
+                        <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
+                        <tr>
+                            <th>Foto</th>
+                            <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="row mt-4">
+                                    <div class="col-6 text-end">
+                                        <a href="${routeedit}" class="btn btn-warning btn-sm">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <form method="POST" action="${routedelete}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                                <i class="fa-solid fa-trash-can"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                `;
 
                 layer.on({
                     click: function(e) {
@@ -312,44 +286,47 @@
             map.addLayer(point);
         });
 
-
-
+        // Polyline Layer
         var polyline = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
                 var routedelete = "{{ route('polyline.destroy', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
 
-                var popupContent = purpleTableStyle + `
-            <table class="purple-table">
-                <tr>
-                    <th>Nama</th>
-                    <td>${feature.properties.name}</td>
-                </tr>
-                <tr>
-                    <th>Deskripsi</th>
-                    <td>${feature.properties.description}</td>
-                </tr>
-                <tr>
-                    <th>Dibuat</th>
-                    <td>${feature.properties.created_at}</td>
-                </tr>
-                <tr>
-                    <th>Foto</th>
-                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <form method="POST" action="${routedelete}">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
-                                <i class="fa-solid fa-trash-can"></i> Hapus
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            </table>
-        `;
+                var routeedit = "{{ route('polyline.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
+
+                var popupContent = `
+                    <table>
+                        <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
+                        <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
+                        <tr><th>Panjang</th><td>${feature.properties.length_km} km</td></tr>
+                        <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
+                        <tr>
+                            <th>Foto</th>
+                            <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="row mt-4">
+                                    <div class="col-6 text-end">
+                                        <a href="${routeedit}" class="btn btn-warning btn-sm">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <form method="POST" action="${routedelete}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                                <i class="fa-solid fa-trash-can"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                `;
 
                 layer.on({
                     click: function(e) {
@@ -367,34 +344,47 @@
             map.addLayer(polyline);
         });
 
-
+        // Polygon Layer
         var polygon = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
                 var routedelete = "{{ route('polygon.destroy', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
 
-                var popupContent = purpleTableStyle + `
-            <table class="purple-table">
-                <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
-                <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
-                <tr><th>Luas</th><td>${feature.properties.area_hectare} ha</td></tr>
-                <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
-                <tr><th>Foto</th>
-                    <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <form method="POST" action="${routedelete}">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
-                                <i class="fa-solid fa-trash-can"></i> Hapus
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            </table>
-        `;
+                var routeedit = "{{ route('polygon.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
+
+                var popupContent = `
+                    <table>
+                        <tr><th>Nama</th><td>${feature.properties.name}</td></tr>
+                        <tr><th>Deskripsi</th><td>${feature.properties.description}</td></tr>
+                        <tr><th>Luas</th><td>${feature.properties.area_hectare} ha</td></tr>
+                        <tr><th>Dibuat</th><td>${feature.properties.created_at}</td></tr>
+                        <tr>
+                            <th>Foto</th>
+                            <td><img src="{{ asset('storage/images') }}/${feature.properties.image}" alt="" width="200px" height="200px"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="row mt-4">
+                                    <div class="col-6 text-end">
+                                        <a href="${routeedit}" class="btn btn-warning btn-sm">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <form method="POST" action="${routedelete}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                                                <i class="fa-solid fa-trash-can"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                `;
 
                 layer.on({
                     click: function(e) {
@@ -425,9 +415,11 @@
             "Polygons": polygon
         };
 
-        // Tambahkan Layer Control ke Peta
+        // Tambahkan Layer Control ke Peta di pojok kanan bawah
         L.control.layers(baseLayers, overlays, {
-            collapsed: false
+            collapsed: false,
+            position: 'bottomright' // Pindahkan ke pojok kanan bawah
         }).addTo(map);
+    </script>
     </script>
 @endsection
