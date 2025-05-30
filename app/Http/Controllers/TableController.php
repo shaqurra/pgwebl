@@ -12,8 +12,8 @@ class TableController extends Controller
     public function __construct()
     {
         $this->points = new PointsModel();
-        $this->points = new PolylineModels();
-        $this->points = new PolygonModels();
+        $this->polyline = new PolylineModels();
+        $this->polygon = new PolygonModels();
 
     }
     public function index()

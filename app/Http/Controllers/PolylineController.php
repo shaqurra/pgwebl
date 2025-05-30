@@ -15,7 +15,11 @@ class PolylineController extends Controller
 
     public function index()
     {
-        //
+        $data = [
+            'title' => 'Map'
+        ];
+
+        return view('map', $data);
     }
 
     /**
@@ -67,6 +71,7 @@ class PolylineController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'image' => $name_image,
+            'user_id' => auth()->user()->id,
         ];
 
         // create data
@@ -91,7 +96,7 @@ class PolylineController extends Controller
      */
     public function edit(string $id)
     {
-            $data = [
+        $data = [
             'title' => 'Edit Polyline',
             'id' => $id,
         ];
@@ -107,7 +112,7 @@ class PolylineController extends Controller
      */
     public function update(Request $request, string $id)
     {
-         $request->validate(
+        $request->validate(
             [
                 'name' => 'required|unique:polyline,name,' . $id,
                 'description' => 'required',
@@ -140,25 +145,25 @@ class PolylineController extends Controller
             if ($old_image != null) {
                 if (file_exists('./storage/images/' . $old_image)) {
                     unlink('./storage/images/' . $old_image);
+                }
+            } else {
+                $name_image = $old_image; // Keep existing image
             }
-        } else {
-            $name_image = $old_image; // Keep existing image
+
+            $data = [
+                'geom' => $request->geom_polyline,
+                'name' => $request->name,
+                'description' => $request->description,
+                'image' => $name_image,
+            ];
+
+            // Update Data
+            if (!$this->polyline->find($id)->update($data)) {
+                return redirect()->route('map')->with('error', 'Point Failed to update');
+            }
+
+            return redirect()->route('map')->with('success', 'Point has been updated');
         }
-
-        $data = [
-            'geom' => $request->geom_polyline,
-            'name' => $request->name,
-            'description' => $request->description,
-            'image' => $name_image,
-        ];
-
-        // Update Data
-        if (!$this->polyline->find($id)->update($data)) {
-            return redirect()->route('map')->with('error', 'Point Failed to update');
-        }
-
-        return redirect()->route('map')->with('success', 'Point has been updated');
-    }
     }
 
     /**
@@ -168,14 +173,14 @@ class PolylineController extends Controller
     {
         $imagefile = $this->polyline->find($id)->image;
 
-        if (!$this->polyline->destroy($id)){
+        if (!$this->polyline->destroy($id)) {
             return redirect()->route('map')->with('error', 'Polyline failed to delete');
         }
 
         //Delete image file
-        if ($imagefile != null){
-            if(file_exists('./storage/images/'. $imagefile)) {
-                unlink('./storage/images/'. $imagefile);
+        if ($imagefile != null) {
+            if (file_exists('./storage/images/' . $imagefile)) {
+                unlink('./storage/images/' . $imagefile);
             }
         }
         return redirect()->route('map')->with('success', 'Polyline has been delete');

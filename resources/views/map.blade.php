@@ -250,22 +250,26 @@
                         <tr>
                             <td colspan="2">
                                 <div class="row mt-4">
-                                    <div class="col-6 text-end">
-                                        <a href="${routeedit}" class="btn btn-warning btn-sm">
-                                            <i class="fa-solid fa-pen-to-square"></i> Edit
-                                        </a>
-                                    </div>
-                                    <div class="col-6">
-                                        <form method="POST" action="${routedelete}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
-                                                <i class="fa-solid fa-trash-can"></i> Hapus
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </td>
+        <div class="col-6 text-end">
+            <a href="${routeedit}" class="btn btn-warning btn-sm">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+            </a>
+        </div>
+        <div class="col-6">
+            <form method="POST" action="${routedelete}">
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin akan dihapus?')">
+                    <i class="fa-solid fa-trash-can"></i> Hapus
+                </button>
+            </form>
+        </div>
+        <div class="col-12 mt-2">
+            <p>Dibuat Oleh: ${feature.properties.user_created}</p>
+        </div>
+    </div>
+</td>
+
                         </tr>
                     </table>
                 `;
@@ -322,6 +326,8 @@
                                             </button>
                                         </form>
                                     </div>
+                                    <div class="col-12 mt-2">
+                                        <p>Dibuat Oleh: ${feature.properties.user_created}</p>  
                                 </div>
                             </td>
                         </tr>
@@ -380,6 +386,9 @@
                                             </button>
                                         </form>
                                     </div>
+                                    <div class="col-12 mt-2">
+                                        <p>Dibuat Oleh: ${feature.properties.user_created}</p>
+
                                 </div>
                             </td>
                         </tr>

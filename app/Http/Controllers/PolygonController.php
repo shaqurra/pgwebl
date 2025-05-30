@@ -74,6 +74,7 @@ class PolygonController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'image' => $name_image,
+             'user_id'=> auth()->user()->id,
         ];
 
         // Create Data
@@ -178,6 +179,7 @@ class PolygonController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'image' => $name_image,
+            'user_id'=> auth()->user()->id,
         ];
 
         // Update Data
