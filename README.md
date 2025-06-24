@@ -89,7 +89,7 @@ Berikut beberapa tampilan antarmuka dari aplikasi JAKTRACK:
 ![CRUD Stasiun](Screenshot%2025-06-25%023839.png)
 
 ### ➕ Digitasi Jalur dan Wilayah
-![Digitasi Peta](Screenshot%202025-06-25%20001700.png)
+![Digitasi Peta](Screenshot%202025-06-25%20001700.png) 
 
 ### 📊 Statistik dan Layer GeoServer
 ![Statistik GeoServer](Screenshot%202025-06-25%20001737.png)
