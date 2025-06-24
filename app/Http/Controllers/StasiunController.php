@@ -55,11 +55,11 @@ class StasiunController extends Controller
     public function show($id)
     {
         $stasiun = DB::table('stasiun_jabodetabek')->where('id', $id)->first();
-        
+
         if (!$stasiun) {
             return response()->json(['error' => 'Stasiun not found'], 404);
         }
-        
+
         return response()->json($stasiun);
     }
 
@@ -97,13 +97,13 @@ class StasiunController extends Controller
             try {
                 $file = $request->file('photo');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                
+
                 // Make sure directory exists
                 $uploadPath = public_path('storage/images');
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
                 }
-                
+
                 $file->move($uploadPath, $filename);
                 $data['gambar'] = $filename;
             } catch (\Exception $e) {
@@ -159,13 +159,13 @@ class StasiunController extends Controller
             try {
                 $file = $request->file('photo');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                
+
                 // Make sure directory exists
                 $uploadPath = public_path('storage/images');
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
                 }
-                
+
                 // Delete old image if exists
                 if (!empty($stasiun->gambar)) {
                     $oldImagePath = $uploadPath . '/' . $stasiun->gambar;
@@ -173,7 +173,7 @@ class StasiunController extends Controller
                         unlink($oldImagePath);
                     }
                 }
-                
+
                 $file->move($uploadPath, $filename);
                 $data['gambar'] = $filename;
             } catch (\Exception $e) {
@@ -197,7 +197,7 @@ class StasiunController extends Controller
         try {
             // Get stasiun data to delete associated image
             $stasiun = DB::table('stasiun_jabodetabek')->where('id', $id)->first();
-            
+
             if (!$stasiun) {
                 return response()->json(['error' => 'Stasiun not found'], 404);
             }
@@ -212,7 +212,7 @@ class StasiunController extends Controller
 
             // Delete from database
             DB::table('stasiun_jabodetabek')->where('id', $id)->delete();
-            
+
             return response()->json(['success' => true, 'message' => 'Data deleted successfully']);
         } catch (\Exception $e) {
             Log::error('Database delete error: ' . $e->getMessage());
