@@ -10,31 +10,38 @@
             width: 100%;
             height: calc(100vh - 56px);
         }
+
+        .popup-image {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
     </style>
 @endsection
 
 @section('content')
     <div id="map"></div>
 
-    <!-- Modal Edit Point -->
+    <!-- Modal Edit Point - FIXED FORM -->
     <div class="modal fade" id="EditPointModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Point</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <!-- Form Update -->
-                <form method="POST" action="{{ route('points.update', $id) }}" enctype="multipart/form-data">
+                <!-- FIXED FORM - Action URL will be set dynamically -->
+                <form method="POST" id="editPointForm" enctype="multipart/form-data">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
 
                     <div class="modal-body">
-                        <input type="hidden" name="id" id="id" value="{{ $id }}">
+                        <input type="hidden" name="id" id="point_id">
 
                         <div class="mb-3">
-                            <label for="name" class="form-label fw-semibold">Name</label>
+                            <label for="name" class="form-label fw-semibold">Name *</label>
                             <input type="text" class="form-control" id="name" name="name"
                                 placeholder="Fill point name here..." required>
                         </div>
@@ -46,23 +53,51 @@
 
                         <div class="mb-3">
                             <label for="geom_point" class="form-label fw-semibold">Geometry</label>
-                            <textarea class="form-control" id="geom_point" name="geom_point" rows="3" readonly></textarea>
+                            <input type="text" class="form-control" id="geom_point" name="geom_point" readonly>
+                            <small class="text-muted">Format: POINT(lon lat)</small>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Created At</label>
+                                    <input type="text" class="form-control" id="created_at" name="created_at" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Updated At</label>
+                                    <input type="text" class="form-control" id="updated_at" name="updated_at" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PHOTO SECTION -->
                         <div class="mb-3">
-                            <label for="image" class="form-label fw-semibold">Photo</label>
-                            <input type="file" class="form-control" id="image_point" name="image"
-                                onchange="document.getElementById('image-point-preview').src = window.URL.createObjectURL(this.files[0])">
-                            <div class="text-center my-3">
-                                <img alt="Preview Image" id="image-point-preview"
-                                    class="img-thumbnail text-center" width="400">
+                            <label for="photo" class="form-label fw-semibold">Photo</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*"
+                                onchange="previewImage(this)">
+                            <div class="mt-2">
+                                <small class="text-muted">Current photo:</small>
+                                <div id="current-image-container" style="display: none;">
+                                    <img id="current-image" class="img-thumbnail"
+                                        style="max-width: 200px; max-height: 150px;">
+                                    <p class="text-muted small" id="current-image-name"></p>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">New photo preview:</small>
+                                <div id="preview-container" style="display: none;">
+                                    <img id="preview-image-point" class="img-thumbnail"
+                                        style="max-width: 200px; max-height: 150px;">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Edit Data</button>
+                        <button type="submit" class="btn btn-primary">Update Data</button>
                     </div>
                 </form>
             </div>
@@ -78,17 +113,16 @@
     <script src="https://unpkg.com/@terraformer/wkt"></script>
 
     <script>
+        // FIXED JAVASCRIPT
         var map = L.map('map').setView([-7.766582, 110.374977], 13);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Group for drawn items
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        // Add draw control for editing
         var drawControl = new L.Control.Draw({
             draw: false,
             edit: {
@@ -99,56 +133,240 @@
         });
         map.addControl(drawControl);
 
-        // When feature is edited
-        map.on('draw:edited', function(e) {
-            var layers = e.layers;
+        // Function to preview new image
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview-image-point').attr('src', e.target.result);
+                    $('#preview-container').show();
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                $('#preview-container').hide();
+            }
+        }
 
-            layers.eachLayer(function(layer) {
-                var geojson = layer.toGeoJSON();
-                var wkt = Terraformer.geojsonToWKT(geojson.geometry);
+        // FIXED: Function to populate modal with feature data
+        function populateModal(feature) {
+            var props = feature.properties || {};
+            
+            // Set form action URL dynamically
+            var pointId = props.id || '';
+            $('#editPointForm').attr('action', "{{ url('api/stasiun') }}/" + pointId);
+            
+            // Populate form fields
+            $('#point_id').val(pointId);
+            $('#name').val(props.namobj || props.name || '');
+            $('#description').val(props.kabkot || props.description || '');
+            
+            // Handle geometry
+            if (feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length === 2) {
+                $('#geom_point').val(`POINT(${feature.geometry.coordinates[0]} ${feature.geometry.coordinates[1]})`);
+            } else {
+                $('#geom_point').val('');
+            }
+            
+            $('#created_at').val(props.created_at || '');
+            $('#updated_at').val(props.updated_at || '');
 
-                var props = geojson.properties || {};
+            // Reset image previews
+            $('#preview-container').hide();
+            $('#current-image-container').hide();
 
-                $('#name').val(props.name || '');
-                $('#description').val(props.description || '');
-                $('#geom_point').val(wkt);
+            // Handle current image
+            var imageName = props.gambar || props.photo || props.image || props.foto;
+            if (imageName && imageName.trim() !== '') {
+                var imageUrl = "{{ asset('storage/images/') }}/" + imageName;
+                $('#current-image').attr('src', imageUrl);
+                $('#current-image-name').text(imageName);
+                $('#current-image-container').show();
+            }
+        }
 
-                if (props.image) {
-                    $('#image-point-preview').attr('src', "{{ asset('storage/images') }}/" + props.image);
+        // Function to handle edit button click in popup
+        function editPoint(pointData) {
+            populateModal(pointData);
+            $('#EditPointModal').modal('show');
+        }
+
+        // FIXED: Create point layer
+        var pointLayer = L.geoJson(null, {
+            pointToLayer: function(feature, latlng) {
+                let iconUrl = '/storage/images/polisi.png';
+                if (feature.properties && feature.properties.type) {
+                    switch (feature.properties.type) {
+                        case 'polsek':
+                            iconUrl = '/storage/images/polisi.png';
+                            break;
+                        case 'posronda':
+                            iconUrl = '/storage/images/posronda.png';
+                            break;
+                        case 'koramil':
+                            iconUrl = '/storage/images/koramil.png';
+                            break;
+                        case 'satpolpp':
+                            iconUrl = '/storage/images/satpolpp.png';
+                            break;
+                        case 'damkar':
+                            iconUrl = '/storage/images/damkar.png';
+                            break;
+                    }
                 }
 
+                var customIcon = L.icon({
+                    iconUrl: iconUrl,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40],
+                    popupAnchor: [0, -40]
+                });
+
+                return L.marker(latlng, {
+                    icon: customIcon
+                });
+            },
+
+            onEachFeature: function(feature, layer) {
+                var props = feature.properties;
+
+                // Build image HTML
+                var imageName = props.gambar || props.photo || props.image || props.foto;
+                var imageHtml = '';
+
+                if (imageName && imageName.trim() !== '') {
+                    var imageUrl = "{{ asset('storage/images/') }}/" + imageName;
+                    imageHtml = `<img src="${imageUrl}" alt="Gambar Stasiun" class="popup-image" style="width:100%;max-width:200px;margin-top:8px;" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+                                <p style="display:none; color:red; font-size:12px;">Image not found</p><br>`;
+                }
+
+                var popupContent = `
+                    <div style="min-width: 250px;">
+                        <strong>Nama Stasiun:</strong> ${props.namobj || props.name || '-'}<br>
+                        <strong>Kode:</strong> ${props.kodkod || props.kode || '-'}<br>
+                        <strong>Kab/Kota:</strong> ${props.kabkot || '-'}<br>
+                        <strong>Provinsi:</strong> ${props.provinsi || '-'}<br>
+                        <strong>User ID:</strong> ${props.user_id || '-'}<br>
+                        <strong>Created:</strong> ${props.created_at || '-'}<br>
+                        <strong>Updated:</strong> ${props.updated_at || '-'}<br>
+                        ${imageHtml}
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="editPoint(${JSON.stringify(feature).replace(/"/g, '&quot;')})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePoint(${props.id})">Hapus</button>
+                        </div>
+                    </div>
+                `;
+
+                layer.bindPopup(popupContent, {
+                    maxWidth: 300,
+                    className: 'custom-popup'
+                });
+
+                drawnItems.addLayer(layer);
+            }
+        });
+
+        // Load GeoJSON point from API
+        $.getJSON("{{ route('api.stasiun') }}", function(data) {
+            console.log('API Data:', data); // Debug log
+            pointLayer.addData(data);
+            map.addLayer(pointLayer);
+
+            if (pointLayer.getBounds && pointLayer.getBounds().isValid()) {
+                map.fitBounds(pointLayer.getBounds(), {
+                    padding: [50, 50]
+                });
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error loading GeoJSON data:', textStatus, errorThrown);
+            alert('Error loading map data');
+        });
+
+        // When feature is edited via draw controls
+        map.on('draw:edited', function(e) {
+            var layers = e.layers;
+            layers.eachLayer(function(layer) {
+                var feature = layer.feature || layer.toGeoJSON();
+                populateModal(feature);
                 $('#EditPointModal').modal('show');
             });
         });
 
-        // Load GeoJSON point from API
-        var pointLayer = L.geoJson(null, {
-            onEachFeature: function(feature, layer) {
-                drawnItems.addLayer(layer);
+        // FIXED: Form submission handler
+        $('#editPointForm').on('submit', function(e) {
+            e.preventDefault();
 
-                var props = feature.properties;
-                var wkt = Terraformer.geojsonToWKT(feature.geometry);
+            var formData = new FormData(this);
+            var actionUrl = $(this).attr('action');
+            
+            // Validate action URL
+            if (!actionUrl) {
+                alert('Error: Form action URL not set');
+                return;
+            }
 
-                layer.on('click', function() {
-                    $('#name').val(props.name || '');
-                    $('#description').val(props.description || '');
-                    $('#geom_point').val(wkt);
+            // Show loading
+            var submitBtn = $(this).find('button[type="submit"]');
+            var originalText = submitBtn.text();
+            submitBtn.text('Updating...').prop('disabled', true);
 
-                    if (props.image) {
-                        $('#image-point-preview').attr('src', "{{ asset('storage/images') }}/" + props.image);
-                        $('#image-point-preview').attr('alt', props.image);
-                        $('#image-point-preview').attr('width', 400);
+            $.ajax({
+                url: actionUrl,
+                type: 'POST', // Use POST with _method override
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    alert('Data berhasil diupdate!');
+                    $('#EditPointModal').modal('hide');
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Update error:', xhr.responseJSON);
+                    var errorMessage = 'Error updating data: ';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        var errors = xhr.responseJSON.errors;
+                        var errorList = [];
+                        for (var field in errors) {
+                            errorList.push(field + ': ' + errors[field].join(', '));
+                        }
+                        errorMessage += errorList.join('; ');
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage += xhr.responseJSON.message;
+                    } else {
+                        errorMessage += error;
                     }
+                    
+                    alert(errorMessage);
+                },
+                complete: function() {
+                    submitBtn.text(originalText).prop('disabled', false);
+                }
+            });
+        });
 
-                    $('#EditPointModal').modal('show');
+        // Function to delete point
+        function deletePoint(pointId) {
+            if (confirm('Apakah Anda yakin ingin menghapus point ini?')) {
+                $.ajax({
+                    url: "{{ url('api/stasiun') }}/" + pointId,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        alert('Point berhasil dihapus!');
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Delete error:', xhr.responseJSON);
+                        alert('Error deleting point: ' + (xhr.responseJSON?.message || error));
+                    }
                 });
             }
-        });
-
-        $.getJSON("{{ route('api.point', $id) }}", function(data) {
-            pointLayer.addData(data);
-            map.addLayer(pointLayer);
-            map.fitBounds(pointLayer.getBounds(), { padding: [100, 100] });
-        });
+        }
     </script>
 @endsection

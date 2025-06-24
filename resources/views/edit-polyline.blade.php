@@ -152,7 +152,7 @@
             },
         });
 
-        $.getJSON("{{ route('api.polylines', $id) }}", function(data) {
+        $.getJSON("{{ route('api.jalurkereta', $id) }}", function(data) {
             polyline.addData(data); // ✅ gunakan `polyline` karena itu yang kamu definisikan sebelumnya
             map.addLayer(polyline);
             map.fitBounds(polyline.getBounds(), {

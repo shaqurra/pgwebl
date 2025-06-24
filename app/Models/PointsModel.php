@@ -17,7 +17,7 @@ class PointsModel extends Model
             ST_AsGeoJSON(points.geom) as geom,
             points.name,
             points.description,
-            points.image,
+            points.photo,
             points.created_at,
             points.updated_at,
             points.user_id,
@@ -41,7 +41,7 @@ class PointsModel extends Model
                     'description' => $p->description,
                     'created_at' => $p->created_at,
                     'updated_at' => $p->updated_at,
-                    'image' => $p->image,
+                    'photo' => $p->photo,
                     'user_created' => $p->user_created,
                     'users_id' => $p->user_id,
                 ],
@@ -58,7 +58,7 @@ class PointsModel extends Model
     {
         // Ambil data dari database
         $points = $this
-            ->select(DB::raw('id, st_asgeojson(geom) as geom, name, description, image, created_at, updated_at'))
+            ->select(DB::raw('id, st_asgeojson(geom) as geom, name, description, photo, created_at, updated_at'))
             ->where('id', $id)
             ->get();
 
@@ -78,7 +78,7 @@ class PointsModel extends Model
                     'description' => $p->description,
                     'created_at' => $p->created_at,
                     'updated_at' => $p->updated_at,
-                    'image' => $p->image,
+                    'photo' => $p->photo,
                 ],
             ];
 

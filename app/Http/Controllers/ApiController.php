@@ -8,6 +8,7 @@ use App\Models\PolylinesModel;
 use App\Models\PolygonsModel;
 use App\Models\PolylineModels;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
@@ -18,32 +19,80 @@ class ApiController extends Controller
         $this->polygon = new PolygonModels();
     }
 
-    public function points()
+    public function stasiun()
     {
-        $points = $this->points->geojson_points();
+        $data = DB::table('stasiun_jabodetabek')->get();
 
-        return response()->json($points);
+        // Format GeoJSON FeatureCollection
+        $features = [];
+        foreach ($data as $row) {
+            $features[] = [
+                'type' => 'Feature',
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [(float)$row->lon, (float)$row->lat],
+                ],
+                'properties' => [
+                    'id' => $row->id,
+                    'namobj' => $row->namobj,
+                    'kodkod' => $row->kodkod,
+                    'kabkot' => $row->kabkot,
+                    'provinsi' => $row->provinsi,
+                    'kelas' => $row->kelas,
+                    'status_ope' => $row->status_ope,
+                ],
+            ];
+        }
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
     }
 
-    public function point($id)
+    public function stasiunDetail($id)
     {
-        $points = $this->points->geojson_point($id);
-
-        return response()->json($points);
+        $row = DB::table('stasiun_jabodetabek')->where('id', $id)->first();
+        if (!$row) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+        $feature = [
+            'type' => 'Feature',
+            'geometry' => [
+                'type' => 'Point',
+                'coordinates' => [(float)$row->lon, (float)$row->lat],
+            ],
+            'properties' => [
+                'id' => $row->id,
+                'namobj' => $row->namobj,
+                'kodkod' => $row->kodkod,
+                'kabkot' => $row->kabkot,
+                'provinsi' => $row->provinsi,
+                'kelas' => $row->kelas,
+                'status_ope' => $row->status_ope,
+            ],
+        ];
+        return response()->json($feature);
     }
 
-    public function polyline()
+    public function jalurKereta()
     {
-        $polyline = $this->polyline->geojson_polyline();
-
-        return response()->json($polyline, 200, [], JSON_NUMERIC_CHECK);
-    }
-
-    public function polylines($id)
-    {
-        $polyline = $this->polyline->geojson_polylines($id);
-
-        return response()->json($polyline);
+        $jalur = DB::select("SELECT id, nama, shape_leng, ST_AsGeoJSON(geom) as geom FROM jalur_kereta_jabodetabek");
+        $features = [];
+        foreach ($jalur as $row) {
+            $features[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($row->geom),
+                'properties' => [
+                    'id' => $row->id,
+                    'nama' => $row->nama,
+                    'shape_leng' => $row->shape_leng,
+                ],
+            ];
+        }
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
     }
 
 

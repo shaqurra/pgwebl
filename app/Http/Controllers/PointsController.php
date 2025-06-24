@@ -71,7 +71,7 @@ class PointsController extends Controller
             'description' => $request->description,
             'images' => $name_image,
             'photo' => $name_image,
-            'user_id'=> auth()->user()->id,
+            'user_id' => auth()->user()->id,
 
         ];
 
@@ -131,7 +131,11 @@ class PointsController extends Controller
             mkdir('./storage/images', 0777);
         }
 
-        $old_image = $this->points->find($id)->image;
+        $point = $this->points->find($id);
+        if (!$point) {
+            return redirect()->route('map')->with('error', 'Data point tidak ditemukan.');
+        }
+        $old_image = $point->image;
 
         // Check if file is uploaded
         if ($request->hasFile('image')) {

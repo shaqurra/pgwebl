@@ -26,8 +26,8 @@
                         <i class="fa-solid fa-database"></i> Data
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ route('api.points') }}" target="_blank">Points</a></li>
-                        <li><a class="dropdown-item" href="{{ route('api.polyline') }}" target="_blank">Polyline</a>
+                        <li><a class="dropdown-item" href="{{ route('api.stasiun') }}" target="_blank">Stasiun</a></li>
+                        <li><a class="dropdown-item" href="{{ route('api.jalurkereta') }}" target="_blank">Jalur Kereta</a>
                         </li>
                         <li><a class="dropdown-item" href="{{ route('api.polygon') }}" target="_blank">Polygon</a>
                         </li>
