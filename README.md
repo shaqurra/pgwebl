@@ -77,4 +77,19 @@ Akses aplikasi di browser melalui [http://127.0.0.1:8000](http://127.0.0.1:8000)
 ## 📄 Lisensi
 
 MIT License
-![Nama Alt Gambar]("E:\4 Semester\Praktikum\PGWEBL\Acara 1\pgwebl\pgwebl\resources\views\Screenshot 2025-06-25 001427.png")
+
+## 🖼️ Tampilan Aplikasi
+
+Berikut beberapa tampilan antarmuka dari aplikasi JAKTRACK:
+
+### 📍 Halaman Peta Interaktif
+![Halaman Peta](Screenshot%202025-06-25%20001427.png)
+
+### 📝 CRUD Stasiun Kereta
+![CRUD Stasiun](Screenshot%202025-06-25%20001556.png)
+
+### ➕ Digitasi Jalur dan Wilayah
+![Digitasi Peta](Screenshot%202025-06-25%20001700.png)
+
+### 📊 Statistik dan Layer GeoServer
+![Statistik GeoServer](Screenshot%202025-06-25%20001737.png)
