@@ -77,3 +77,4 @@ Akses aplikasi di browser melalui [http://127.0.0.1:8000](http://127.0.0.1:8000)
 ## 📄 Lisensi
 
 MIT License
+![Nama Alt Gambar]("E:\4 Semester\Praktikum\PGWEBL\Acara 1\pgwebl\pgwebl\resources\views\Screenshot 2025-06-25 001427.png")
