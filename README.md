@@ -86,7 +86,7 @@ Berikut beberapa tampilan antarmuka dari aplikasi JAKTRACK:
 ![Halaman Peta](Screenshot%202025-06-25%20001427.png)
 
 ### 📝 CRUD Stasiun Kereta
-![CRUD Stasiun](Screenshot%2025-06-25%023839.png)
+![CRUD Stasiun](Screenshot%202025-06-25%20023839.png)
 
 ### ➕ Digitasi Jalur dan Wilayah
 ![Digitasi Peta](Screenshot%202025-06-25%20001700.png) 
